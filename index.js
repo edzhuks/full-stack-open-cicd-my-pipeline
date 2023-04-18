@@ -6,42 +6,45 @@ const Entry = require('./models/entry')
 
 app.use(express.static('build'))
 app.use(express.json())
-morgan.token('postbody', function (req) { return req.method==='POST'?JSON.stringify(req.body):' '})
-app.use(morgan(':method :url :status :res[content-length] - :response-time ms :postbody'))
-
-
+morgan.token('postbody', function (req) {
+  return req.method === 'POST' ? JSON.stringify(req.body) : ' '
+})
+app.use(
+  morgan(
+    ':method :url :status :res[content-length] - :response-time ms :postbody'
+  )
+)
 
 app.get('/', (request, response) => {
   response.send('<h1>Phonebook!</h1>')
 })
 
 app.get('/api/persons', (request, response) => {
-  Entry.find({}).then(entries => {
+  Entry.find({}).then((entries) => {
     response.json(entries)
   })
 })
 
 app.get('/api/persons/:id', (request, response, next) => {
   Entry.findById(request.params.id)
-    .then(entry => {
-      if(entry){
+    .then((entry) => {
+      if (entry) {
         response.json(entry)
       } else {
         response.status(404).end()
       }
     })
-    .catch(error => {
+    .catch((error) => {
       next(error)
     })
 })
 
 app.delete('/api/persons/:id', (request, response, next) => {
   Entry.findByIdAndRemove(request.params.id)
-    .then(entry => {
+    .then((entry) => {
       response.status(204).json(entry)
     })
-    .catch(error => next(error))
-
+    .catch((error) => next(error))
 })
 
 app.put('/api/persons/:id', (request, response, next) => {
@@ -52,15 +55,19 @@ app.put('/api/persons/:id', (request, response, next) => {
     number: body.number,
   }
 
-  Entry.findByIdAndUpdate(request.params.id, person, { new: true , runValidators: true, context: 'query' })
-    .then(updatedEntry => {
+  Entry.findByIdAndUpdate(request.params.id, person, {
+    new: true,
+    runValidators: true,
+    context: 'query',
+  })
+    .then((updatedEntry) => {
       response.json(updatedEntry)
     })
-    .catch(error => next(error))
+    .catch((error) => next(error))
 })
 
 app.get('/api/info', (req, res) => {
-  Entry.countDocuments().then(number => {
+  Entry.countDocuments().then((number) => {
     res.send(`Phonebook has info for ${number} people
     ${new Date()}`)
   })
@@ -71,19 +78,13 @@ app.post('/api/persons', (request, response, next) => {
 
   if (!body.name) {
     return response.status(400).json({
-      error: 'name missing'
+      error: 'name missing',
     })
   }
 
-  // if (phonebook.find(p => p.name === body.name)) {
-  //     return response.status(400).json({
-  //         error: 'person already exists'
-  //     })
-  // }
-
   if (!body.number) {
     return response.status(400).json({
-      error: 'number missing'
+      error: 'number missing',
     })
   }
 
@@ -91,12 +92,12 @@ app.post('/api/persons', (request, response, next) => {
     name: body.name,
     number: body.number,
   })
-  person.save()
-    .then(savedPerson => {
+  person
+    .save()
+    .then((savedPerson) => {
       response.json(savedPerson)
     })
-    .catch(error => next(error))
-
+    .catch((error) => next(error))
 })
 
 const errorHandler = (error, request, response, next) => {
